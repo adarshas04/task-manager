@@ -41,16 +41,14 @@ taskActions.post("/", (req, res) => {
 
 taskActions.put("/:id", (req, res) => {
     const newTask = req.body;
-    console.log(newTask)
-    const taskId = req.params.id;
+    const taskId = parseInt(req.params.id);
     let writePath = path.resolve(__dirname, "../../task.json");
 
-    if (validator.validateTaskInfo(newTask, taskData).status) {
+    if (validator.validateTaskInfoForUpdate(newTask, taskData).status && taskId === newTask.id) {
         let allTasks = JSON.parse(JSON.stringify(taskData));
-        let index = allTasks.tasks.findIndex((task) => task.id == taskId);
-        console.log(index)
-        if (index !== -1) {
-            allTasks.tasks[index] = newTask;
+        let taskIndex = allTasks.tasks.findIndex((task) => task.id === taskId)
+        if (taskIndex !== -1) {
+            allTasks.tasks[taskIndex] = newTask;
 
             fs.writeFileSync(writePath, JSON.stringify(allTasks), {
                 encoding: "utf8",
@@ -60,11 +58,31 @@ taskActions.put("/:id", (req, res) => {
             res.status(200).json(validator.validateTaskInfoForUpdate(newTask, taskData));
 
         } else {
-            res.send("Task not found");
+            res.status(404).send("Task not found");
         }
     } else {
-        res.status(400).json(validator.validateTaskInfoForUpdate(newTask, taskData));
+        res.status(400).send("Invalid task update request");
     }
 });
+
+taskActions.delete("/:id", (req, res) => {
+    const taskId = parseInt(req.params.id);
+    let writePath = path.resolve(__dirname, "../../task.json");
+    let allTasks = JSON.parse(JSON.stringify(taskData));
+
+    const taskIndex = allTasks.tasks.findIndex(task => task.id === taskId);
+    if (taskIndex !== -1) {
+        allTasks.tasks.splice(taskIndex, 1);
+        fs.writeFileSync(writePath, JSON.stringify(allTasks), {
+            encoding: "utf8",
+            flag: "w",
+        });
+
+        res.status(200).json({ message: 'Task deleted successfully' });
+    } else {
+        res.status(404).json({ message: 'Task not found' });
+    }
+
+})
 
 module.exports = taskActions;
