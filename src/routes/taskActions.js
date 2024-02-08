@@ -29,7 +29,7 @@ taskActions.get("/:id", (req, res) => {
 
 taskActions.post("/", (req, res) => {
     const newTask = req.body;
-    if (controller.validateTaskInfo(newTask).status) {
+    if (controller.validateTaskInfo(newTask)) {
         // Generate and assign a new task ID
         const maxId = taskData.tasks.reduce((max, task) => (task.id > max ? task.id : max), 0);
         newTask.id = maxId + 1;
@@ -49,7 +49,7 @@ taskActions.put("/:id", (req, res) => {
     if (!controller.validateTaskId(newTask, taskData)) {
         return res.status(404).send("Task not found");
     }
-    if (controller.validateTaskInfo(newTask).status) {
+    if (controller.validateTaskInfo(newTask)) {
         const taskIndex = taskData.tasks.findIndex((task) => task.id === taskId);
         taskData.tasks[taskIndex] = newTask;
         fs.writeFileSync(path.resolve(__dirname, "../../task.json"), JSON.stringify(taskData), { encoding: "utf8", flag: "w" });
