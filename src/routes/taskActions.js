@@ -5,8 +5,6 @@ const fs = require("fs");
 const path = require("path");
 const controller = require("../helpers/controller");
 
-taskActions.use(express.json());
-
 taskActions.get("/", (req, res) => {
     let filteredTasks = [...taskData.tasks];
 
