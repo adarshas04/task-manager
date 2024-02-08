@@ -3,10 +3,12 @@ const taskActions = express.Router();
 const taskData = require("../../task.json");
 const fs = require("fs");
 const path = require("path");
-const validator = require("../helpers/validator");
+const controller = require("../helpers/controller");
+
+taskActions.use(express.json())
 
 taskActions.get("/", (req, res) => {
-    return res.status(200).json(taskData);
+    return res.status(200).json(taskData.tasks);
 });
 
 taskActions.get("/:id", (req, res) => {
@@ -17,7 +19,7 @@ taskActions.get("/:id", (req, res) => {
     if (filteredTask.length == 0) {
         return res.status(404).send("Task not found");
     } else {
-        return res.status(200).json(filteredTask);
+        return res.status(200).json(filteredTask[0]);
     }
 });
 
@@ -25,43 +27,48 @@ taskActions.post("/", (req, res) => {
     const newTask = req.body;
     let writePath = path.resolve(__dirname, "../../task.json");
 
-    if (validator.validateTaskInfo(newTask, taskData).status) {
+    if (controller.validateTaskInfo(newTask, taskData).status) {
         let allTasks = JSON.parse(JSON.stringify(taskData));
+        newTask.id = allTasks.tasks.length + 1;
         allTasks.tasks.push(newTask);
 
         fs.writeFileSync(writePath, JSON.stringify(allTasks), {
             encoding: "utf8",
             flag: "w",
         });
-        res.status(200).json(validator.validateTaskInfo(newTask, taskData));
+        res.status(201).json(controller.validateTaskInfo(newTask, taskData));
     } else {
-        res.status(400).json(validator.validateTaskInfo(newTask, taskData));
+        res.status(400).json(controller.validateTaskInfo(newTask, taskData));
     }
 });
 
 taskActions.put("/:id", (req, res) => {
     const newTask = req.body;
     const taskId = parseInt(req.params.id);
+    newTask.id = taskId;
     let writePath = path.resolve(__dirname, "../../task.json");
+    console.log(newTask);
+    if(!controller.validateTaskId(newTask, taskData)) {
 
-    if (validator.validateTaskInfoForUpdate(newTask, taskData).status && taskId === newTask.id) {
+        return res.status(404).send("Task not found");
+
+    }else if(controller.validateTaskInfoForUpdate(newTask, taskData).status) {
+
         let allTasks = JSON.parse(JSON.stringify(taskData));
         let taskIndex = allTasks.tasks.findIndex((task) => task.id === taskId)
-        if (taskIndex !== -1) {
-            allTasks.tasks[taskIndex] = newTask;
+        allTasks.tasks[taskIndex] = newTask;
 
-            fs.writeFileSync(writePath, JSON.stringify(allTasks), {
-                encoding: "utf8",
-                flag: "w",
-            });
+        fs.writeFileSync(writePath, JSON.stringify(allTasks), {
+            encoding: "utf8",
+            flag: "w",
+        });
 
-            res.status(200).json(validator.validateTaskInfoForUpdate(newTask, taskData));
+        res.status(200).json(controller.validateTaskInfoForUpdate(newTask, taskData));
 
-        } else {
-            res.status(404).send("Task not found");
-        }
     } else {
+
         res.status(400).send("Invalid task update request");
+        
     }
 });
 

@@ -89,12 +89,6 @@
       "title": "Install jsonwebtoken",
       "description": "Install jsonwebtoken",
       "completed": false
-    },
-    {
-      "id": 16,
-      "title": "Learn testing in JS",
-      "description": "Learn to write unit tests in JavaScript",
-      "completed": true
     }
   ]
 }
