@@ -35,8 +35,12 @@ taskActions.post("/", (req, res) => {
         newTask.id = maxId + 1;
 
         taskData.tasks.push(newTask);
-        fs.writeFileSync(path.resolve(__dirname, "../../task.json"), JSON.stringify(taskData), { encoding: "utf8", flag: "w" });
-        res.status(201).json({ status: true, message: "Task has been created" });
+        fs.writeFile(path.resolve(__dirname, "../../task.json"), JSON.stringify(taskData), { encoding: "utf8", flag: "w" }, (err) => {
+            if (err) {
+                return res.status(500).send('Server error occured. Please try again later');
+            }
+            return res.status(201).send("Task has been created");
+        });
     } else {
         res.status(400).json({ status: false, message: "Task data does not contain complete info. Please check your inputs" });
     }
@@ -52,8 +56,12 @@ taskActions.put("/:id", (req, res) => {
     if (controller.validateTaskInfo(newTask)) {
         const taskIndex = taskData.tasks.findIndex((task) => task.id === taskId);
         taskData.tasks[taskIndex] = newTask;
-        fs.writeFileSync(path.resolve(__dirname, "../../task.json"), JSON.stringify(taskData), { encoding: "utf8", flag: "w" });
-        res.status(200).json({ status: true, message: "Task has been updated" });
+        fs.writeFile(path.resolve(__dirname, "../../task.json"), JSON.stringify(taskData), { encoding: "utf8", flag: "w" }, (err) => {
+            if (err) {
+                return res.status(500).send('Server error occured. Please try again later');
+            }
+            return res.status(200).send("Task has been updated");
+        });
     } else {
         res.status(400).send("Invalid task update request");
     }
@@ -64,8 +72,12 @@ taskActions.delete("/:id", (req, res) => {
     const taskIndex = taskData.tasks.findIndex((task) => task.id === taskId);
     if (taskIndex !== -1) {
         taskData.tasks.splice(taskIndex, 1);
-        fs.writeFileSync(path.resolve(__dirname, "../../task.json"), JSON.stringify(taskData), { encoding: "utf8", flag: "w" });
-        res.status(200).json({ message: 'Task deleted successfully' });
+        fs.writeFile(path.resolve(__dirname, "../../task.json"), JSON.stringify(taskData), { encoding: "utf8", flag: "w" }, (err) => {
+            if (err) {
+                return res.status(500).send('Server error occured. Please try again later');
+            }
+            return res.status(200).send("Task deleted successfully");
+        });
     } else {
         res.status(404).json({ message: 'Task not found' });
     }
