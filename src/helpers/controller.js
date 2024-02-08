@@ -1,6 +1,6 @@
 //Responsible for sanitizing inputs
 class Controller {
-    static validateTaskInfo(newTask, taskData) {
+    static validateTaskInfo(newTask) {
     if (newTask.hasOwnProperty("title") && typeof newTask.title === 'string' &&
         newTask.hasOwnProperty("description") && typeof newTask.description === 'string' &&
         (!newTask.hasOwnProperty("completed") || (newTask.hasOwnProperty("completed") && typeof newTask.completed === 'boolean'))
